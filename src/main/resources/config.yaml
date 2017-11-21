@@ -1,0 +1,26 @@
+base_url: 'http://example.com'
+rest_route: '/minecraft_auth/v1/login/'
+kick_message: 'This is the default kick message!'
+holding_server: 'noauth'
+lobby_server: 'lobby'
+default_group: 'default'
+member_group: 'members'
+debug_mode: false
+auth_modules:
+  flatfile:
+    file: 'whitelist.yaml'
+    uuid_mode: false
+  mysql:
+    host: localhost
+    username: mcwhitelist
+    password: 'password'
+    database: whitelist
+    table: 'whitelist'
+    column: 'username'
+    uuid_mode: false
+  http:
+    base_url: 'http://example.com'
+    method: 'get'
+    other_parameters:
+      rest_route: '/minecraft_auth/v1/login/'
+    uuid_mode: true
