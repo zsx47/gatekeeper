@@ -7,7 +7,7 @@ default_group: 'default'
 member_group: 'members'
 debug_mode: false
 auth_modules:
-  flatfile:
+  yaml:
     file: 'whitelist.yaml'
     uuid_mode: false
   mysql:
@@ -18,6 +18,7 @@ auth_modules:
     table: 'whitelist'
     column: 'username'
     uuid_mode: false
+    auth_level: 'depreciated'
   http:
     base_url: 'http://example.com'
     method: 'get'

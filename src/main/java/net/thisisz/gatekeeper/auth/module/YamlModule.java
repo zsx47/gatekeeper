@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.UUID;
 
-public class FlatFileModule implements AuthModule {
+public class YamlModule implements AuthModule {
 
 
     private File file;
@@ -17,7 +17,7 @@ public class FlatFileModule implements AuthModule {
     private AuthLevel authLevel;
     private boolean uuidMode;
 
-    public FlatFileModule(String filename, boolean uuid) {
+    public YamlModule(String filename, boolean uuid) {
         this.authLevel = AuthLevel.NORMAL;
         this.filename = filename;
         this.uuidMode = uuid;
@@ -25,7 +25,7 @@ public class FlatFileModule implements AuthModule {
         initFile();
     }
 
-    public FlatFileModule(String filename, boolean uuid, AuthLevel authLevel) {
+    public YamlModule(String filename, boolean uuid, AuthLevel authLevel) {
         this.authLevel = authLevel;
         this.filename = filename;
         this.uuidMode = uuid;

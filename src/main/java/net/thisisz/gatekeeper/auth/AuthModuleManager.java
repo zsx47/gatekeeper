@@ -2,7 +2,7 @@ package net.thisisz.gatekeeper.auth;
 
 import net.thisisz.gatekeeper.GateKeeper;
 import net.thisisz.gatekeeper.auth.module.AuthModule;
-import net.thisisz.gatekeeper.auth.module.FlatFileModule;
+import net.thisisz.gatekeeper.auth.module.YamlModule;
 import net.thisisz.gatekeeper.auth.module.HttpModule;
 import net.thisisz.gatekeeper.auth.module.MysqlModule;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -33,7 +33,7 @@ public class AuthModuleManager {
         Configuration authModules = getPlugin().getConfiguration().getSection("auth_modules");
         for (String key: authModules.getKeys()) {
             switch (key) {
-                case "flatfile":
+                case "yaml":
                     this.authModules.add(newFlatFileModule(authModules.getSection(key)));
                     break;
                 case "mysql":
@@ -49,17 +49,19 @@ public class AuthModuleManager {
         }
     }
 
-    private FlatFileModule newFlatFileModule(Configuration section) {
+    private YamlModule newFlatFileModule(Configuration section) {
+        boolean uuidMode = getUuidMode(section);
         if (section.getKeys().contains("auth_level")) {
-            return new FlatFileModule(section.getString("file"),
-                    section.getBoolean("uuid_mode"),
+            return new YamlModule(section.getString("file"),
+                    uuidMode,
                     AuthLevel.fromString(section.getString("auth_level")));
         }
-        return new FlatFileModule(section.getString("file"),
-                section.getBoolean("uuid_mode"));
+        return new YamlModule(section.getString("file"),
+                uuidMode);
     }
 
     private MysqlModule newMysqlModule(Configuration section) {
+        boolean uuidMode = getUuidMode(section);
         if (section.getKeys().contains("auth_level")) {
             return new MysqlModule(section.getString("host"),
                     section.getString("port"),
@@ -68,7 +70,7 @@ public class AuthModuleManager {
                     section.getString("database"),
                     section.getString("table"),
                     section.getString("column"),
-                    section.getBoolean("uuid_mode"),
+                    uuidMode,
                     AuthLevel.fromString(section.getString("auth_level")));
         }
         return new MysqlModule(section.getString("host"),
@@ -78,21 +80,22 @@ public class AuthModuleManager {
                 section.getString("database"),
                 section.getString("table"),
                 section.getString("column"),
-                section.getBoolean("uuid_mode"));
+                uuidMode);
     }
 
     private HttpModule newHttpModule(Configuration section) {
+        boolean uuidMode = getUuidMode(section);
         if (section.getKeys().contains("auth_level")) {
             return new HttpModule(section.getString("base_url"),
                     section.getString("method"),
                     section.getSection("other_parameters"),
-                    section.getBoolean("uuid_mode"),
+                    uuidMode,
                     AuthLevel.fromString(section.getString("auth_level")));
         }
         return new HttpModule(section.getString("base_url"),
                 section.getString("method"),
                 section.getSection("other_parameters"),
-                section.getBoolean("uuid_mode"));
+                uuidMode);
     }
 
     public boolean runAuth(ProxiedPlayer player) {
@@ -102,6 +105,14 @@ public class AuthModuleManager {
             }
         }
         return false;
+    }
+
+    private boolean getUuidMode(Configuration section) {
+        if (section.getKeys().contains("uuid_mode")) {
+            return section.getBoolean("uuid_mode");
+        } else {
+            return false;
+        }
     }
 
 
