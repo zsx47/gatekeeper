@@ -2,7 +2,7 @@ package net.thisisz.gatekeeper.auth;
 
 public enum AuthLevel {
     NONE(0),
-    DEPRECIATED_METHOD(1),
+    DEPRECATED(1),
     NORMAL(2),
     PREFERRED(3);
 
@@ -15,6 +15,10 @@ public enum AuthLevel {
         return authLevel;
     }
 
+    public Integer asInt() {
+        return authLevel;
+    }
+
     public static AuthLevel fromString(String authLevelString) {
         switch (authLevelString) {
             case "preferred":
@@ -22,7 +26,7 @@ public enum AuthLevel {
             case "normal":
                 return AuthLevel.NORMAL;
             case "depreciated":
-                return AuthLevel.DEPRECIATED_METHOD;
+                return AuthLevel.DEPRECATED;
             case "none":
             default:
                 return AuthLevel.NONE;

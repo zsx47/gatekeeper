@@ -44,52 +44,61 @@ public class HttpModule implements AuthModule {
         }
     }
 
+    public AuthLevel getAuthLevel() {
+        return authLevel;
+    }
+
     private GateKeeper getPlugin() {
         return GateKeeper.getPlugin();
     }
 
     @Override
     public boolean checkAuthUUID(UUID uuid) {
-        String urlString = "";
-        try {
-            StringBuilder result = new StringBuilder();
-            urlString = getPlugin().getConfiguration().getString("base_url");
-            urlString = urlString + "?";
-            if (additionalParams.size() != 0) {
-                for (String key: additionalParams.keySet()) {
-                    urlString = urlString + key + "=" + additionalParams.get(key) + "&";
+        if (uuidMode) {
+            String urlString = "";
+            try {
+                StringBuilder result = new StringBuilder();
+                urlString = getPlugin().getConfiguration().getString("base_url");
+                urlString = urlString + "?";
+                if (additionalParams.size() != 0) {
+                    for (String key : additionalParams.keySet()) {
+                        urlString = urlString + key + "=" + additionalParams.get(key) + "&";
+                    }
                 }
+                urlString = urlString + "uuid=" + uuid.toString().replace("-", "");
+                URL url = new URL(urlString);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+                conn.setRequestMethod("GET");
+                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    result.append(line);
+                }
+                rd.close();
+                getPlugin().getProxy().getLogger().info(urlString);
+                if (Objects.equals(result.toString(), "\"true\"")) {
+                    return true;
+                }
+            } catch (ProtocolException e) {
+                getPlugin().getLogger().info("Failed request with url: " + urlString);
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                getPlugin().getLogger().info("Failed request with url: " + urlString);
+                e.printStackTrace();
+            } catch (IOException e) {
+                getPlugin().getLogger().info("Failed request with url: " + urlString);
+                e.printStackTrace();
             }
-            urlString = urlString + "uuid=" + uuid.toString().replace("-", "");
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
-            conn.setRequestMethod("GET");
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                result.append(line);
-            }
-            rd.close();
-            getPlugin().getProxy().getLogger().info(urlString);
-            if (Objects.equals(result.toString(), "\"true\"")) {
-                return true;
-            }
-        } catch (ProtocolException e) {
-            getPlugin().getLogger().info("Failed request with url: " + urlString);
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            getPlugin().getLogger().info("Failed request with url: " + urlString);
-            e.printStackTrace();
-        } catch (IOException e) {
-            getPlugin().getLogger().info("Failed request with url: " + urlString);
-            e.printStackTrace();
+            return false;
         }
         return false;
     }
 
     @Override
     public boolean checkAuthUsername(String name) {
+        if (!uuidMode) {
+        }
         return false;
     }
 

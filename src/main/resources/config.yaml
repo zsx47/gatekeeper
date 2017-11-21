@@ -5,6 +5,7 @@ holding_server: 'noauth'
 lobby_server: 'lobby'
 default_group: 'default'
 member_group: 'members'
+deprecated_method_message: 'The method used to authenticate your login is no longer officially supported by this minecraft server you should contact server staff to get more information on how to fix this.'
 debug_mode: false
 auth_modules:
   yaml:

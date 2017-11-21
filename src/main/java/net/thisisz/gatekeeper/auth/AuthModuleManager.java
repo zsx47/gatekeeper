@@ -14,11 +14,12 @@ import java.util.List;
 public class AuthModuleManager {
 
     private static AuthModuleManager instance;
+    private AuthLevel maxAuthLevel = AuthLevel.NONE;
     private List<AuthModule> authModules = new ArrayList<AuthModule>();
 
     public AuthModuleManager() {
         instance = this;
-
+        loadAuthModulesFromConfig();
     }
 
     private GateKeeper getPlugin() {
@@ -45,6 +46,15 @@ public class AuthModuleManager {
                 default:
                     getPlugin().getLogger().info("Unrecognized auth module type " + key);
                     break;
+            }
+        }
+        updateMaxAuthLevel();
+    }
+
+    private void updateMaxAuthLevel() {
+        for (AuthModule module: authModules) {
+            if (module.getAuthLevel().asInt() > maxAuthLevel.asInt()) {
+                maxAuthLevel = module.getAuthLevel();
             }
         }
     }
@@ -99,10 +109,22 @@ public class AuthModuleManager {
     }
 
     public boolean runAuth(ProxiedPlayer player) {
+        AuthLevel authLevel = AuthLevel.NONE;
         for (AuthModule module: authModules) {
             if (module.checkAuthUsername(player.getName()) || module.checkAuthUUID(player.getUniqueId())) {
-                return true;
+                if (authLevel.asInt() < module.getAuthLevel().asInt()) {
+                    authLevel = module.getAuthLevel();
+                    if (authLevel == maxAuthLevel) {
+                        return true;
+                    }
+                }
             }
+        }
+        if (authLevel.asInt() > AuthLevel.NONE.asInt()) {
+            if (authLevel == authLevel.DEPRECATED) {
+
+            }
+            return true;
         }
         return false;
     }
