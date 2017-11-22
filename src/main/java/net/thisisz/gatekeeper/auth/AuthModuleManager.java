@@ -1,6 +1,7 @@
 package net.thisisz.gatekeeper.auth;
 
 import net.thisisz.gatekeeper.GateKeeper;
+import net.thisisz.gatekeeper.asynctask.SendDeprecatedAuthMethod;
 import net.thisisz.gatekeeper.auth.module.AuthModule;
 import net.thisisz.gatekeeper.auth.module.YamlModule;
 import net.thisisz.gatekeeper.auth.module.HttpModule;
@@ -122,7 +123,7 @@ public class AuthModuleManager {
         }
         if (authLevel.asInt() > AuthLevel.NONE.asInt()) {
             if (authLevel == authLevel.DEPRECATED) {
-
+                getPlugin().getProxy().getScheduler().runAsync(getPlugin(), new SendDeprecatedAuthMethod(player));
             }
             return true;
         }
