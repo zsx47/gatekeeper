@@ -50,6 +50,11 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
         }
     }
 
+    @EventHandler
+    public void onPermissionUpdateEvent(PermissionUpdateEvent event) {
+        doUserPermUpdate(getPlugin().getLuckApi().getUser(getPlugin().getLuckApi().getUuidCache().getUUID(event.getPlayer().getUniqueId())));
+    }
+
     private void onUserDemoteEvent(UserDemoteEvent event) {
         doUserPermUpdate(event.getUser());
     }

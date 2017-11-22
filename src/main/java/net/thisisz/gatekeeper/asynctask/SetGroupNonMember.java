@@ -5,6 +5,7 @@ import me.lucko.luckperms.api.User;
 import me.lucko.luckperms.exceptions.ObjectAlreadyHasException;
 import net.thisisz.gatekeeper.Callback;
 import net.thisisz.gatekeeper.GateKeeper;
+import net.thisisz.gatekeeper.PermissionUpdateEvent;
 
 import java.util.UUID;
 
@@ -53,6 +54,7 @@ public class SetGroupNonMember implements Callback, Runnable {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        getPlugin().getProxy().getPluginManager().callEvent(new PermissionUpdateEvent(getPlugin().getProxy().getPlayer(uuid)));
                     }, getPlugin().getLuckApi().getStorage().getAsyncExecutor());
         } catch (ObjectAlreadyHasException e) {
             getPlugin().getLogger().info("User is already a part of a group.");
