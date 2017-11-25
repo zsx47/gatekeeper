@@ -24,6 +24,9 @@ public class MysqlModule implements AuthModule {
         this.table = table;
         this.column = column;
         uuidMode = uuid;
+        if (this.port == null || this.port == "") {
+            this.port = "3306";
+        }
         try {
             openConnection();
         } catch (Exception e) {
@@ -40,12 +43,17 @@ public class MysqlModule implements AuthModule {
         this.table = table;
         this.column = column;
         uuidMode = uuid;
+        this.authLevel = authLevel;
+        if (this.port == null || this.port == "") {
+            this.port = "3306";
+        }
         try {
             openConnection();
         } catch (Exception e) {
-            getPlugin().getLogger().info("Faild to open connection to database.");
+
+            getPlugin().getLogger().info("Failed to open connection to database.");
+            getPlugin().getLogger().info(e.getMessage());
         }
-        this.authLevel = authLevel;
     }
 
     private GateKeeper getPlugin() {
@@ -135,9 +143,9 @@ public class MysqlModule implements AuthModule {
     public boolean checkAuthUsername(String name) {
         if (!uuidMode) {
             try {
-                ResultSet rs = executeQuery("SELECT " + column + " FROM " + table + "WHERE " + column + " LIKE '" + name + "';");
+                ResultSet rs = executeQuery("SELECT " + column + " FROM " + table + " WHERE " + column + " LIKE '" + name + "';");
                 rs.last();
-                if (rs.getRow() > 1) {
+                if (rs.getRow() >= 1) {
                     return true;
                 }
             } catch (Exception e) {

@@ -25,8 +25,10 @@ public class CheckUserAuth implements Runnable {
         User user = getPlugin().getLuckApi().getUser(player.getUniqueId());
         if (user.getPrimaryGroup().equals(getPlugin().getConfiguration().getString("default_group")) || user.getPrimaryGroup().equals(getPlugin().getConfiguration().getString("member_group"))) {
             if (getPlugin().getAuthModuleManager().runAuth(player)) {
+                getPlugin().getLogger().info("Player was authenticated successfully. " + player.getUniqueId().toString() + " " + player.getName());
                 callbackTrue.run();
             } else {
+                getPlugin().getLogger().info("Player was not authenticated. " + player.getUniqueId().toString() + " " + player.getName());
                 callbackFalse.run();
             }
         }

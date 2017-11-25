@@ -76,7 +76,6 @@ public class HttpModule implements AuthModule {
                     result.append(line);
                 }
                 rd.close();
-                getPlugin().getProxy().getLogger().info(urlString);
                 if (Objects.equals(result.toString(), "\"true\"")) {
                     return true;
                 }

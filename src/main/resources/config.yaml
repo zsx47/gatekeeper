@@ -13,6 +13,7 @@ auth_modules:
     uuid_mode: false
   mysql:
     host: localhost
+    port: 3306
     username: mcwhitelist
     password: 'password'
     database: whitelist

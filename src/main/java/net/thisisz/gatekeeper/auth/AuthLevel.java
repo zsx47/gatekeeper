@@ -1,5 +1,7 @@
 package net.thisisz.gatekeeper.auth;
 
+import net.thisisz.gatekeeper.GateKeeper;
+
 public enum AuthLevel {
     NONE(0),
     DEPRECATED(1),
@@ -20,18 +22,21 @@ public enum AuthLevel {
     }
 
     public static AuthLevel fromString(String authLevelString) {
+        GateKeeper.getPlugin().getLogger().info("AuthLevelString:" + authLevelString);
         switch (authLevelString) {
-            case "preferred":
+            case "PREFERRED":
                 return AuthLevel.PREFERRED;
-            case "normal":
+            case "NORMAL":
                 return AuthLevel.NORMAL;
-            case "depreciated":
+            case "DEPRECATED":
                 return AuthLevel.DEPRECATED;
-            case "none":
+            case "NONE":
             default:
                 return AuthLevel.NONE;
         }
     }
+
+
 
 
 }

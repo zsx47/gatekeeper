@@ -11,6 +11,7 @@ import net.md_5.bungee.config.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AuthModuleManager {
 
@@ -33,16 +34,23 @@ public class AuthModuleManager {
 
     private void loadAuthModulesFromConfig() {
         Configuration authModules = getPlugin().getConfiguration().getSection("auth_modules");
+        AuthModule module;
         for (String key: authModules.getKeys()) {
             switch (key) {
                 case "yaml":
-                    this.authModules.add(newFlatFileModule(authModules.getSection(key)));
+                    module = newYamlModule(authModules.getSection(key));
+                    this.authModules.add(module);
+                    getPlugin().getLogger().info("Loaded yaml module. AuthLevel: " + module.getAuthLevel().toString() );
                     break;
                 case "mysql":
-                    this.authModules.add(newMysqlModule(authModules.getSection(key)));
+                    module = newMysqlModule(authModules.getSection(key));
+                    this.authModules.add(module);
+                    getPlugin().getLogger().info("Loaded mysql module. AuthLevel: " + module.getAuthLevel().toString() );
                     break;
                 case "http":
-                    this.authModules.add(newHttpModule(authModules.getSection(key)));
+                    module = newHttpModule(authModules.getSection(key));
+                    this.authModules.add(module);
+                    getPlugin().getLogger().info("Loaded http module. AuthLevel: " + module.getAuthLevel().toString() );
                     break;
                 default:
                     getPlugin().getLogger().info("Unrecognized auth module type " + key);
@@ -60,7 +68,7 @@ public class AuthModuleManager {
         }
     }
 
-    private YamlModule newFlatFileModule(Configuration section) {
+    private YamlModule newYamlModule(Configuration section) {
         boolean uuidMode = getUuidMode(section);
         if (section.getKeys().contains("auth_level")) {
             return new YamlModule(section.getString("file"),
@@ -122,11 +130,13 @@ public class AuthModuleManager {
             }
         }
         if (authLevel.asInt() > AuthLevel.NONE.asInt()) {
-            if (authLevel == authLevel.DEPRECATED) {
+            getPlugin().getLogger().info(authLevel.toString());
+            if (Objects.equals(authLevel.asInt(), AuthLevel.DEPRECATED.asInt())) {
                 getPlugin().getProxy().getScheduler().runAsync(getPlugin(), new SendDeprecatedAuthMethod(player));
             }
             return true;
         }
+
         return false;
     }
 

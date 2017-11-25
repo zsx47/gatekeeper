@@ -37,7 +37,7 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
                 new CheckUserAuth(event.getPlayer(),
                         new SetGroupMember(event.getPlayer().getUniqueId()),
                         new SetGroupNonMember(event.getPlayer().getUniqueId())));
-        if (!event.getPlayer().hasPermission("mcwpauth.join")) {
+        if (!event.getPlayer().hasPermission("gatekeeper.join")) {
             if (holdingServer != null) {
                 event.getPlayer().connect(holdingServer);
             } else {
@@ -71,14 +71,18 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
 
     private void doUserPermUpdate(User user) {
         ProxiedPlayer player = getPlugin().getProxy().getPlayer(user.getUuid());
+        doUserPermUpdate(player);
+    }
+
+    private void doUserPermUpdate(ProxiedPlayer player) {
         if (player != null) {
-            if (user.hasPermission(getPlugin().getLuckApi().getNodeFactory().newBuilder("mcwpauth.join").build()).asBoolean()) {
-                if (player.getServer().getInfo().getName().equals(getPlugin().getConfiguration().getString("holding_server"))) {
-                    player.connect(getPlugin().getProxy().getServerInfo(getPlugin().getConfiguration().getString("lobby_server")));
+            if (player.hasPermission("gatekeeper.join")) {
+                if (player.getServer().getInfo().getName().equals(holdingServer.getName())) {
+                    player.connect(lobbyServer);
                 }
             } else {
-                if (!player.getServer().getInfo().getName().equals(getPlugin().getConfiguration().getString("holding_server"))) {
-                    player.connect(getPlugin().getProxy().getServerInfo(getPlugin().getConfiguration().getString("holding_server")));
+                if (!player.getServer().getInfo().getName().equals(holdingServer.getName())) {
+                    player.connect(holdingServer);
                 }
             }
         }
