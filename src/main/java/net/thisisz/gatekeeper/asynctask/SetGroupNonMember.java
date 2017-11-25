@@ -54,7 +54,6 @@ public class SetGroupNonMember implements Callback, Runnable {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        getPlugin().getProxy().getPluginManager().callEvent(new PermissionUpdateEvent(getPlugin().getProxy().getPlayer(uuid)));
                     }, getPlugin().getLuckApi().getStorage().getAsyncExecutor());
         } catch (ObjectAlreadyHasException e) {
             getPlugin().getLogger().info("User is already a part of a group.");

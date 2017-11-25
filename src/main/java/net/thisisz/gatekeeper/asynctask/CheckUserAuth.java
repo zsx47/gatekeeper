@@ -4,6 +4,7 @@ import me.lucko.luckperms.api.User;
 import net.thisisz.gatekeeper.Callback;
 import net.thisisz.gatekeeper.GateKeeper;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.thisisz.gatekeeper.PermissionUpdateEvent;
 
 public class CheckUserAuth implements Runnable {
 
@@ -27,9 +28,11 @@ public class CheckUserAuth implements Runnable {
             if (getPlugin().getAuthModuleManager().runAuth(player)) {
                 getPlugin().getLogger().info("Player was authenticated successfully. " + player.getUniqueId().toString() + " " + player.getName());
                 callbackTrue.run();
+                getPlugin().getProxy().getPluginManager().callEvent(new PermissionUpdateEvent(player));
             } else {
                 getPlugin().getLogger().info("Player was not authenticated. " + player.getUniqueId().toString() + " " + player.getName());
                 callbackFalse.run();
+                getPlugin().getProxy().getPluginManager().callEvent(new PermissionUpdateEvent(player));
             }
         }
     }

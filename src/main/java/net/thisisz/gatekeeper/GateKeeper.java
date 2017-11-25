@@ -7,6 +7,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import net.thisisz.gatekeeper.command.RetryAuth;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +58,8 @@ public class GateKeeper extends Plugin {
         authModuleManager = new AuthModuleManager();
 
         getProxy().getPluginManager().registerListener(this, new EventListener());
+
+        getProxy().getPluginManager().registerCommand(this, new RetryAuth());
 
         getLogger().info("Successfully loaded!");
     }
