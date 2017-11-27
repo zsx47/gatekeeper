@@ -130,7 +130,6 @@ public class AuthModuleManager {
             }
         }
         if (authLevel.asInt() > AuthLevel.NONE.asInt()) {
-            getPlugin().getLogger().info(authLevel.toString());
             if (Objects.equals(authLevel.asInt(), AuthLevel.DEPRECATED.asInt())) {
                 getPlugin().getProxy().getScheduler().runAsync(getPlugin(), new SendDeprecatedAuthMethod(player));
             }

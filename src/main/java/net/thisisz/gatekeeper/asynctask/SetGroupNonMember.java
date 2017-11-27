@@ -31,10 +31,20 @@ public class SetGroupNonMember implements Callback, Runnable {
             try {
                 luckUser.unsetPermission(memberNode);
             } catch (Exception e) {
-                getPlugin().getLogger().info("User doesn't have default group.");
+                if (getPlugin().debugMode()) {
+                    getPlugin().getLogger().info(e.getMessage());
+                    e.printStackTrace();
+                }
             }
             Node defaultNode = getPlugin().getLuckApi().getNodeFactory().makeGroupNode(getPlugin().getLuckApi().getGroup(getPlugin().getConfiguration().getString("default_group"))).build();
-            luckUser.setPermission(defaultNode);
+            try {
+                luckUser.setPermission(defaultNode);
+            } catch (Exception e) {
+                if (getPlugin().debugMode()) {
+                    getPlugin().getLogger().info(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
             getPlugin().getLuckApi().getStorage().saveUser(luckUser)
                     .thenAcceptAsync(wasSuccessful -> {
                         if (!wasSuccessful) {
@@ -50,13 +60,16 @@ public class SetGroupNonMember implements Callback, Runnable {
                         try {
                             luckUser.setPrimaryGroup(getPlugin().getConfiguration().getString("default_group"));
                         } catch (ObjectAlreadyHasException e) {
-
                         } catch (Exception e) {
+                            getPlugin().getLogger().info(e.getMessage());
                             e.printStackTrace();
                         }
                     }, getPlugin().getLuckApi().getStorage().getAsyncExecutor());
-        } catch (ObjectAlreadyHasException e) {
-            getPlugin().getLogger().info("User is already a part of a group.");
+        } catch (Exception e) {
+            if (getPlugin().debugMode()) {
+                getPlugin().getLogger().info(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
