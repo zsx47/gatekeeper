@@ -5,6 +5,9 @@ import me.lucko.luckperms.api.event.EventBus;
 import me.lucko.luckperms.api.event.user.UserDataRecalculateEvent;
 import me.lucko.luckperms.api.event.user.track.UserDemoteEvent;
 import me.lucko.luckperms.api.event.user.track.UserPromoteEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerKickEvent;
 import net.thisisz.gatekeeper.asynctask.CheckUserAuth;
 import net.thisisz.gatekeeper.asynctask.SetGroupMember;
 import net.thisisz.gatekeeper.asynctask.SetGroupNonMember;
@@ -46,6 +49,27 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
                     servers = servers + server + ", ";
                 }
                 getPlugin().getLogger().info("Server not found! Valid server options:" + servers);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onServerKickEvent(ServerKickEvent event) {
+        if (!event.getPlayer().hasPermission("gatekeeper.join")) {
+            if (event.getKickedFrom() == holdingServer) {
+                event.getPlayer().disconnect(new ComponentBuilder("Unable to find a server to put you in. Please try again later.").create());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onServerConnectEvent(ServerConnectEvent event) {
+        if (!event.getPlayer().hasPermission("gatekeeper.join")) {
+            if (!event.getTarget().getName().equals(getPlugin().getConfiguration().getString("holding_server"))) {
+                event.setCancelled(true);
+                if (event.getPlayer().getServer().getInfo() != holdingServer) {
+                    event.getPlayer().connect(holdingServer);
+                }
             }
         }
     }

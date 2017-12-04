@@ -1,6 +1,4 @@
 base_url: 'http://example.com'
-rest_route: '/minecraft_auth/v1/login/'
-kick_message: 'This is the default kick message!'
 holding_server: 'noauth'
 lobby_server: 'lobby'
 default_group: 'default'
