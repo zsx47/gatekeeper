@@ -78,6 +78,10 @@ public class HttpModule implements AuthModule {
                 rd.close();
                 if (Objects.equals(result.toString(), "\"true\"")) {
                     return true;
+                } else {
+                    if (getPlugin().debugMode()) {
+                        getPlugin().getLogger().info("Failed to authenticate user: " + uuid + " with url: " + urlString);
+                    }
                 }
             } catch (ProtocolException e) {
                 getPlugin().getLogger().info("Failed request with url: " + urlString);

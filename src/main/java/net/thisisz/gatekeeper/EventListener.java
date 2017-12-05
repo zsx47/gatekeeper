@@ -41,15 +41,7 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
                         new SetGroupMember(event.getPlayer().getUniqueId()),
                         new SetGroupNonMember(event.getPlayer().getUniqueId())));
         if (!event.getPlayer().hasPermission("gatekeeper.join")) {
-            if (holdingServer != null) {
-                event.getPlayer().connect(holdingServer);
-            } else {
-                String servers = "";
-                for (String server: getPlugin().getProxy().getServers().keySet()) {
-                    servers = servers + server + ", ";
-                }
-                getPlugin().getLogger().info("Server not found! Valid server options:" + servers);
-            }
+            event.getPlayer().connect(holdingServer);
         }
     }
 
@@ -64,11 +56,13 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
 
     @EventHandler
     public void onServerConnectEvent(ServerConnectEvent event) {
-        if (!event.getPlayer().hasPermission("gatekeeper.join")) {
-            if (!event.getTarget().getName().equals(getPlugin().getConfiguration().getString("holding_server"))) {
+        if (event.getTarget() != holdingServer) {
+            if (!event.getPlayer().hasPermission("gatekeeper.join")) {
                 event.setCancelled(true);
-                if (event.getPlayer().getServer().getInfo() != holdingServer) {
-                    event.getPlayer().connect(holdingServer);
+                if (event.getPlayer().getServer() != null) {
+                    if (event.getPlayer().getServer().getInfo() != holdingServer) {
+                        event.getPlayer().connect(holdingServer);
+                    }
                 }
             }
         }
@@ -80,11 +74,15 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
     }
 
     private void onUserDemoteEvent(UserDemoteEvent event) {
-        doUserPermUpdate(event.getUser());
+        if (event.getUser() != null) {
+            doUserPermUpdate(event.getUser());
+        }
     }
 
     private void onUserPromoteEvent(UserPromoteEvent event) {
-        doUserPermUpdate(event.getUser());
+        if (event.getUser() != null) {
+            doUserPermUpdate(event.getUser());
+        }
     }
 
     private void onUserDataRecalculateEvent(UserDataRecalculateEvent event) {

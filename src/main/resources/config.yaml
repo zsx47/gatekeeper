@@ -5,6 +5,7 @@ default_group: 'default'
 member_group: 'members'
 deprecated_method_message: 'The method used to authenticate your login is no longer officially supported by this minecraft server you should contact server staff to get more information on how to fix this.'
 debug_mode: false
+fail_message: "We failed to find you on our whitelist contact support for more help."
 auth_modules:
   yaml:
     file: 'whitelist.yaml'

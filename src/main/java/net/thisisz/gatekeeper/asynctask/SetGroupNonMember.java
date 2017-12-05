@@ -3,10 +3,14 @@ package net.thisisz.gatekeeper.asynctask;
 import me.lucko.luckperms.api.Node;
 import me.lucko.luckperms.api.User;
 import me.lucko.luckperms.exceptions.ObjectAlreadyHasException;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.thisisz.gatekeeper.Callback;
 import net.thisisz.gatekeeper.GateKeeper;
 import net.thisisz.gatekeeper.PermissionUpdateEvent;
 
+import java.awt.*;
 import java.util.UUID;
 
 public class SetGroupNonMember implements Callback, Runnable {
@@ -71,6 +75,8 @@ public class SetGroupNonMember implements Callback, Runnable {
                 e.printStackTrace();
             }
         }
+        ProxiedPlayer p = getPlugin().getProxy().getPlayer(uuid);
+        p.sendMessage(new ComponentBuilder(ChatColor.RED + getPlugin().getConfiguration().getString("fail_message")).create());
     }
 
 }
