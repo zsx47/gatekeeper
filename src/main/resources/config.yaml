@@ -1,4 +1,3 @@
-base_url: 'http://example.com'
 holding_server: 'noauth'
 lobby_server: 'lobby'
 default_group: 'default'
