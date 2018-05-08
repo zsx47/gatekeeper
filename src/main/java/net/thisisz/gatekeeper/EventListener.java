@@ -1,54 +1,56 @@
 package net.thisisz.gatekeeper;
 
-import me.lucko.luckperms.api.User;
-import me.lucko.luckperms.api.event.EventBus;
-import me.lucko.luckperms.api.event.user.UserDataRecalculateEvent;
-import me.lucko.luckperms.api.event.user.track.UserDemoteEvent;
-import me.lucko.luckperms.api.event.user.track.UserPromoteEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.event.ServerKickEvent;
-import net.thisisz.gatekeeper.asynctask.CheckUserAuth;
-import net.thisisz.gatekeeper.asynctask.SetGroupMember;
-import net.thisisz.gatekeeper.asynctask.SetGroupNonMember;
-import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.thisisz.gatekeeper.event.PermissionUpdateEvent;
+import net.thisisz.gatekeeper.permissions.PermissionProvider;
 
-public class EventListener implements net.md_5.bungee.api.plugin.Listener {
-
-    private GateKeeper plugin;
-    private ServerInfo holdingServer, lobbyServer;
+public class EventListener implements Listener {
 
     public EventListener() {
-        holdingServer = getPlugin().getProxy().getServerInfo(getPlugin().getConfiguration().getString("holding_server"));
-        lobbyServer = getPlugin().getProxy().getServerInfo(getPlugin().getConfiguration().getString("lobby_server"));
-        EventBus eventBus = GateKeeper.getPlugin().getLuckApi().getEventBus();
-        eventBus.subscribe(UserDemoteEvent.class, this::onUserDemoteEvent);
-        eventBus.subscribe(UserPromoteEvent.class, this::onUserPromoteEvent);
-        eventBus.subscribe(UserDataRecalculateEvent.class, this::onUserDataRecalculateEvent);
+        getPlugin().getProxy().getPluginManager().registerListener(getPlugin(), this);
     }
 
-    public GateKeeper getPlugin() {
+    private GateKeeper getPlugin() {
         return GateKeeper.getPlugin();
     }
 
+    private PermissionProvider getPermissionHandler() { return getPlugin().getPermissionHandler(); }
+
     @EventHandler
     public void onPostLoginEvent(PostLoginEvent event) {
-        getPlugin().getProxy().getScheduler().runAsync(getPlugin(),
-                new CheckUserAuth(event.getPlayer(),
-                        new SetGroupMember(event.getPlayer().getUniqueId()),
-                        new SetGroupNonMember(event.getPlayer().getUniqueId())));
+        checkAuth(event.getPlayer());
         if (!event.getPlayer().hasPermission("gatekeeper.join")) {
-            event.getPlayer().connect(holdingServer);
+            event.getPlayer().connect(getPlugin().getConfig().getHoldingServer());
         }
+    }
+
+    public void checkAuth(ProxiedPlayer player) {
+        getPlugin().getProxy().getScheduler().runAsync(getPlugin(), () -> {
+            String primaryGroup = getPermissionHandler().getPrimaryGroup(player.getUniqueId());
+            if (primaryGroup.equals(getPlugin().getConfig().getDefaultGroup()) || primaryGroup.equals(getPlugin().getConfig().getMemberGroup())) {
+                if (getPlugin().getAuthModuleManager().runAuth(player)) {
+                    getPlugin().getLogger().info("Player was authenticated successfully. " + player.getUniqueId().toString() + " " + player.getName());
+                    getPermissionHandler().setGroupMember(player.getUniqueId());
+                } else {
+                    player.sendMessage(new ComponentBuilder(getPlugin().getConfig().getAuthFailMessage()).create());
+                    getPlugin().getLogger().info("Player was not authenticated. " + player.getUniqueId().toString() + " " + player.getName());
+                    getPermissionHandler().setGroupDefault(player.getUniqueId());
+                }
+                doUserPermUpdate(player);
+            }
+        });
     }
 
     @EventHandler
     public void onServerKickEvent(ServerKickEvent event) {
         if (!event.getPlayer().hasPermission("gatekeeper.join")) {
-            if (event.getKickedFrom() == holdingServer) {
+            if (event.getKickedFrom() == getPlugin().getConfig().getHoldingServer()) {
                 event.getPlayer().disconnect(new ComponentBuilder("Unable to find a server to put you in. Please try again later.").create());
             }
         }
@@ -56,13 +58,16 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
 
     @EventHandler
     public void onServerConnectEvent(ServerConnectEvent event) {
-        if (event.getTarget() != holdingServer) {
-            if (!event.getPlayer().hasPermission("gatekeeper.join")) {
-                event.setCancelled(true);
+        if (!event.getPlayer().hasPermission("gatekeeper.join")) {
+            if (event.getTarget() != getPlugin().getConfig().getHoldingServer()) {
                 if (event.getPlayer().getServer() != null) {
-                    if (event.getPlayer().getServer().getInfo() != holdingServer) {
-                        event.getPlayer().connect(holdingServer);
+                    if (event.getPlayer().getServer().getInfo() != getPlugin().getConfig().getHoldingServer()) {
+                        event.getPlayer().connect(getPlugin().getConfig().getHoldingServer());
+                    } else {
+                        event.setCancelled(true);
                     }
+                } else {
+                    event.setTarget(getPlugin().getConfig().getHoldingServer());
                 }
             }
         }
@@ -70,41 +75,20 @@ public class EventListener implements net.md_5.bungee.api.plugin.Listener {
 
     @EventHandler
     public void onPermissionUpdateEvent(PermissionUpdateEvent event) {
-        doUserPermUpdate(getPlugin().getLuckApi().getUser(getPlugin().getLuckApi().getUuidCache().getUUID(event.getPlayer().getUniqueId())));
-    }
-
-    private void onUserDemoteEvent(UserDemoteEvent event) {
-        if (event.getUser() != null) {
-            doUserPermUpdate(event.getUser());
-        }
-    }
-
-    private void onUserPromoteEvent(UserPromoteEvent event) {
-        if (event.getUser() != null) {
-            doUserPermUpdate(event.getUser());
-        }
-    }
-
-    private void onUserDataRecalculateEvent(UserDataRecalculateEvent event) {
-        if (event.getUser() != null) {
-            doUserPermUpdate(event.getUser());
-        }
-    }
-
-    private void doUserPermUpdate(User user) {
-        ProxiedPlayer player = getPlugin().getProxy().getPlayer(user.getUuid());
-        doUserPermUpdate(player);
+        doUserPermUpdate(event.getPlayer());
     }
 
     private void doUserPermUpdate(ProxiedPlayer player) {
         if (player != null) {
-            if (player.hasPermission("gatekeeper.join")) {
-                if (player.getServer().getInfo().getName().equals(holdingServer.getName())) {
-                    player.connect(lobbyServer);
-                }
-            } else {
-                if (!player.getServer().getInfo().getName().equals(holdingServer.getName())) {
-                    player.connect(holdingServer);
+            if(player.getServer() != null) {
+                if (player.hasPermission("gatekeeper.join")) {
+                    if (player.getServer().getInfo().getName().equals(getPlugin().getConfig().getHoldingServer().getName())) {
+                        player.connect(getPlugin().getConfig().getLobbyServer());
+                    }
+                } else {
+                    if (!player.getServer().getInfo().getName().equals(getPlugin().getConfig().getHoldingServer().getName())) {
+                        player.connect(getPlugin().getConfig().getHoldingServer());
+                    }
                 }
             }
         }

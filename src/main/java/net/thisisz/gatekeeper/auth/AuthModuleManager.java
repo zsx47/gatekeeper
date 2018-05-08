@@ -1,7 +1,7 @@
 package net.thisisz.gatekeeper.auth;
 
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.thisisz.gatekeeper.GateKeeper;
-import net.thisisz.gatekeeper.asynctask.SendDeprecatedAuthMethod;
 import net.thisisz.gatekeeper.auth.module.AuthModule;
 import net.thisisz.gatekeeper.auth.module.YamlModule;
 import net.thisisz.gatekeeper.auth.module.HttpModule;
@@ -131,7 +131,7 @@ public class AuthModuleManager {
         }
         if (authLevel.asInt() > AuthLevel.NONE.asInt()) {
             if (Objects.equals(authLevel.asInt(), AuthLevel.DEPRECATED.asInt())) {
-                getPlugin().getProxy().getScheduler().runAsync(getPlugin(), new SendDeprecatedAuthMethod(player));
+                getPlugin().getProxy().getScheduler().runAsync(getPlugin(), () -> player.sendMessage(new ComponentBuilder(getPlugin().getConfiguration().getString("deprecated_method_message")).create()));
             }
             return true;
         }
