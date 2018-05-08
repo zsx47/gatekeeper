@@ -33,6 +33,7 @@ public class AuthModuleManager {
     }
 
     private void loadAuthModulesFromConfig() {
+        this.authModules = new ArrayList<AuthModule>();
         Configuration authModules = getPlugin().getConfiguration().getSection("auth_modules");
         AuthModule module;
         for (String key: authModules.getKeys()) {
@@ -45,7 +46,7 @@ public class AuthModuleManager {
                 case "mysql":
                     module = newMysqlModule(authModules.getSection(key));
                     this.authModules.add(module);
-                    getPlugin().getLogger().info("Loaded mysql module. AuthLevel: " + module.getAuthLevel().toString() );
+                    getPlugin().getLogger().info("Loaded mysql module. AuthLevel: " + module.getAuthLevel().toString() + " UUIDMode: " + ((MysqlModule) module).getUUIDMode() );
                     break;
                 case "http":
                     module = newHttpModule(authModules.getSection(key));
@@ -140,11 +141,7 @@ public class AuthModuleManager {
     }
 
     private boolean getUuidMode(Configuration section) {
-        if (section.getKeys().contains("uuid_mode")) {
-            return section.getBoolean("uuid_mode");
-        } else {
-            return false;
-        }
+        return section.getBoolean("uuid_mode", false);
     }
 
 

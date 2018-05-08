@@ -25,4 +25,6 @@ public class Config {
 
     public String getAuthFailMessage() { return config.getString("fail_message"); }
 
+    public boolean isDebugMode() { return config.getBoolean("debug_mode"); }
+
 }

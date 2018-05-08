@@ -42,7 +42,6 @@ public class EventListener implements Listener {
                     getPlugin().getLogger().info("Player was not authenticated. " + player.getUniqueId().toString() + " " + player.getName());
                     getPermissionHandler().setGroupDefault(player.getUniqueId());
                 }
-                doUserPermUpdate(player);
             }
         });
     }

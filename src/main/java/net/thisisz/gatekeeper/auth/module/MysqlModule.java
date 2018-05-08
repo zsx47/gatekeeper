@@ -24,13 +24,13 @@ public class MysqlModule implements AuthModule {
         this.table = table;
         this.column = column;
         uuidMode = uuid;
-        if (this.port == null || this.port == "") {
+        if (this.port == null || this.port.equals("")) {
             this.port = "3306";
         }
         try {
             openConnection();
         } catch (Exception e) {
-            getPlugin().getLogger().info("Faild to open connection to database.");
+            getPlugin().getLogger().info("Failed to open connection to database.");
         }
     }
 
@@ -50,10 +50,13 @@ public class MysqlModule implements AuthModule {
         try {
             openConnection();
         } catch (Exception e) {
-
             getPlugin().getLogger().info("Failed to open connection to database.");
             getPlugin().getLogger().info(e.getMessage());
         }
+    }
+
+    public boolean getUUIDMode() {
+        return uuidMode;
     }
 
     private GateKeeper getPlugin() {
@@ -119,14 +122,13 @@ public class MysqlModule implements AuthModule {
     public boolean checkAuthUUID(UUID user) {
         if (uuidMode) {
             try {
-                ResultSet rs = executeQuery("SELECT " + column + " FROM " + table + "WHERE " + column + "='" + user.toString() + "';");
-                rs.last();
-                if (rs.getRow() > 1) {
-                    return true;
+                String queryString = "SELECT " + column + " FROM " + table + " WHERE " + column + "='" + user.toString().replace("-", "") + "';";
+                if (getPlugin().getConfig().isDebugMode()) {
+                    getPlugin().getLogger().info("QueryString: " + queryString);
                 }
-                rs = executeQuery("SELECT " + column + " FROM " + table + "WHERE " + column + "='" + user.toString().replace("-", "") + "';");
+                ResultSet rs = executeQuery(queryString);
                 rs.last();
-                if (rs.getRow() > 1) {
+                if (rs.getRow() >= 1) {
                     return true;
                 }
             } catch (Exception e) {
